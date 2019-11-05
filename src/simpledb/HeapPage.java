@@ -54,7 +54,6 @@ public class HeapPage implements Page {
             e.printStackTrace();
         }
         dis.close();
-
     }
 
     /** Return the number of tuples on this page.
@@ -63,7 +62,8 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() {        
         // some code goes here
-        return 0;
+    	int tuplesize = td.getSize();
+    	return (int)Math.floor((BufferPool.PAGE_SIZE*8)/(tuplesize*8+1));
 
     }
 
@@ -72,9 +72,7 @@ public class HeapPage implements Page {
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      */
     private int getHeaderSize() {        
-        
-        // some code goes here
-        return 0;
+        return (int)Math.ceil((double)this.getNumTuples()/8);
                  
     }
     
@@ -91,7 +89,7 @@ public class HeapPage implements Page {
      */
     public HeapPageId getId() {
     // some code goes here
-    throw new UnsupportedOperationException("implement this");
+    	return pid;
     }
 
     /**
@@ -262,7 +260,14 @@ public class HeapPage implements Page {
      */
     public int getNumEmptySlots() {
         // some code goes here
-        return 0;
+    	int count = 0;
+    	for (int i = 0; i < this.getNumTuples(); i++) {
+    		if(!getSlot(i))
+    		{
+    			count++;
+    		}
+		}
+        return count;
     }
 
     /**
@@ -270,7 +275,13 @@ public class HeapPage implements Page {
      */
     public boolean getSlot(int i) {
         // some code goes here
-        return false;
+    	int byteno = i/8;
+		int bitno = i%8;
+		int usedbit = header[byteno] & (1<<bitno);
+		if (byteno >= header.length || byteno < 0) {
+			return false;
+		}
+		else return (usedbit > 0);
     }
 
     /**
@@ -282,12 +293,34 @@ public class HeapPage implements Page {
     }
 
     /**
-     * @return an iterator over all tuples on this page (calling remove on this iterator throws an UnsupportedOperationException)
+     * @return an iterator over all tuples on this page (calling remove on this iterator throws 
+     * an UnsupportedOperationException)
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
     public Iterator<Tuple> iterator() {
         // some code goes here
-        return null;
+    	return new Iterator<Tuple>() {
+    		private int index = -1;
+    		@Override
+    		public boolean hasNext() {
+    			while((index + 1 < numSlots) && !getSlot(index+1))
+    			{
+    				index++;
+    			}
+    			return (index+1<numSlots);
+    			
+    		}
+    		public Tuple next() {
+    			if(hasNext()) {
+    				return tuples[++index];
+    			}
+    			else throw new NoSuchElementException();
+    		}
+    		public void remove() {
+    			throw new UnsupportedOperationException();
+    		}
+    		
+    	};
     }
 
 }

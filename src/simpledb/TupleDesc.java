@@ -5,7 +5,8 @@ import java.util.*;
  * TupleDesc describes the schema of a tuple.
  */
 public class TupleDesc {
-
+	private Type[] typeAr;
+	private String[] fieldAr;
     /**
      * Merge two TupleDescs into one, with td1.numFields + td2.numFields
      * fields, with the first td1.numFields coming from td1 and the remaining
@@ -15,8 +16,15 @@ public class TupleDesc {
      * @return the new TupleDesc
      */
     public static TupleDesc combine(TupleDesc td1, TupleDesc td2) {
-        // some code goes here
-        return null;
+        //td1.typeAr is private??
+    	Type[] newtype = new Type[td1.numFields()+td2.numFields()];
+    	String[] newfield = new String[td1.numFields()+td2.numFields()];
+    	System.arraycopy(td1.typeAr, 0, newtype, 0, td1.numFields());
+    	System.arraycopy(td2.typeAr, 0, newtype, td1.numFields(), td2.numFields());
+    	System.arraycopy(td1.fieldAr, 0, newfield, 0, td1.numFields());
+    	System.arraycopy(td2.fieldAr, 0, newfield, td1.numFields(), td2.numFields());
+    	TupleDesc newTD = new TupleDesc(newtype,newfield);
+        return newTD;
     }
 
     /**
@@ -28,7 +36,12 @@ public class TupleDesc {
      * @param fieldAr array specifying the names of the fields. Note that names may be null.
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
-        // some code goes here
+        //finished
+    	if(typeAr.length == 0) {
+    		throw new IllegalArgumentException("typeAr contain at least one entry!");
+    	}
+    	this.typeAr = typeAr;
+    	this.fieldAr = fieldAr;
     }
 
     /**
@@ -40,15 +53,20 @@ public class TupleDesc {
      *        this TupleDesc. It must contain at least one entry.
      */
     public TupleDesc(Type[] typeAr) {
-        // some code goes here
+        // finished
+    	if(typeAr.length == 0) {
+    		throw new IllegalArgumentException("typeAr contain at least one entry!");
+    	}
+    	this.typeAr = typeAr;
+    	this.fieldAr = new String[typeAr.length];
     }
 
     /**
      * @return the number of fields in this TupleDesc
      */
     public int numFields() {
-        // some code goes here
-        return 0;
+        // finished
+        return typeAr.length;
     }
 
     /**
@@ -59,8 +77,11 @@ public class TupleDesc {
      * @throws NoSuchElementException if i is not a valid field reference.
      */
     public String getFieldName(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+        //finished
+    	if(i >= typeAr.length || i < 0 ) {
+    		throw new NoSuchElementException();
+    	}
+    	return this.fieldAr[i];
     }
 
     /**
@@ -71,8 +92,18 @@ public class TupleDesc {
      * @throws NoSuchElementException if no field with a matching name is found.
      */
     public int nameToId(String name) throws NoSuchElementException {
-        // some code goes here
-        return 0;
+        //finished
+    	if(name == null){
+    		throw new NoSuchElementException();
+    	}
+    	int i;
+    	for(i = 0; i < this.numFields(); i++) {
+    		//compare
+    		if(name.equals(this.fieldAr[i])) {
+    			return i;
+    		}
+    	}
+    	throw new NoSuchElementException();
     }
 
     /**
@@ -83,8 +114,12 @@ public class TupleDesc {
      * @throws NoSuchElementException if i is not a valid field reference.
      */
     public Type getType(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+        //finished
+    	if(i >= typeAr.length || i < 0 ) {
+    		throw new NoSuchElementException();
+    	}
+    	return this.typeAr[i];
+        
     }
 
     /**
@@ -92,8 +127,12 @@ public class TupleDesc {
      * Note that tuples from a given TupleDesc are of a fixed size.
      */
     public int getSize() {
-        // some code goes here
-        return 0;
+        // finished
+    	int TotalSize = 0;
+    	for(Type typetmp:this.typeAr) {
+    		TotalSize += typetmp.getLen();
+    	}
+        return TotalSize;
     }
 
     /**
@@ -105,8 +144,24 @@ public class TupleDesc {
      * @return true if the object is equal to this TupleDesc.
      */
     public boolean equals(Object o) {
-        // some code goes here
-        return false;
+        //finished
+    	if(o == null) {
+    		return false;
+    	}
+    	if(this == o){
+    		return true;
+    	}
+    	if(o instanceof TupleDesc) {
+    		TupleDesc oTD = (TupleDesc)o;
+    		if(oTD.numFields() == this.numFields()) {
+    			for(int i = 0; i < oTD.numFields(); i++) {
+    				if((oTD.getType(i) != this.getType(i)) ||(oTD.getFieldName(i) != this.getFieldName(i))) {
+    					return false;
+    				}
+    			}
+    			return true;
+    		}else return false;
+    	}else return false;
     }
 
     public int hashCode() {
@@ -122,7 +177,15 @@ public class TupleDesc {
      * @return String describing this descriptor.
      */
     public String toString() {
-        // some code goes here
-        return "";
+        //finished
+    	StringBuffer S = new StringBuffer("");
+    	for(int i = 0; i < this.numFields(); i++) {
+    		S.append(this.getType(i) == Type.INT_TYPE? "int":"string");
+    		S.append("(" + this.getFieldName(i)+ ")");
+    		if(i < this.numFields()-1) {
+    			S.append(',');
+    		}
+    	}
+        return S.toString();
     }
 }

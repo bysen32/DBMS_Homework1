@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+//import com.sun.tools.javac.util.Names;
+
 /**
  * The Catalog keeps track of all available tables in the database and their
  * associated schemas.
@@ -16,24 +18,50 @@ import java.util.*;
 
 public class Catalog {
 
-    /**
+	/**
      * Constructor.
      * Creates a new, empty catalog.
      */
+	private HashMap<Integer,DbFile> IdFile;
+	private HashMap<Integer,String> IdName;
+	private HashMap<String,Integer> NameId;
+	
     public Catalog() {
         // some code goes here
+    	IdFile = new HashMap<Integer,DbFile>();
+    	IdName = new HashMap<Integer,String>();
+    	NameId = new HashMap<String,Integer>();
     }
 
     /**
      * Add a new table to the catalog.
      * This table's contents are stored in the specified DbFile.
-     * @param file the contents of the table to add;  file.getId() is the identfier of
-     *    this file/tupledesc param for the calls getTupleDesc and getFile
-     * @param name the name of the table -- may be an empty string.  May not be null.  If a name
-     * conflict exists, use the last table to be added as the table for a given name.
+     * @param file: the contents of the table to add;  
+     * 				file.getId() is the identfier of this file
+     * 				tupledesc param for the calls getTupleDesc and getFile
+     * @param name: the name of the table -- may be an empty string.  May not be null. 
+     * If a name conflict exists, use the last table to be added as the table for a given name.
      */
+
     public void addTable(DbFile file, String name) {
         // some code goes here
+    	if(name == null)
+    	{
+    		throw new IllegalArgumentException();
+    	}
+        for(Integer id: IdName.keySet()) {
+        	if(IdName.get(id).equals(name))
+        	{
+        		IdFile.remove(id);
+        		IdName.remove(id);
+        		NameId.remove(name);
+        		break;
+        	}
+        }
+    	IdFile.put(file.getId(),file);
+    	IdName.put(file.getId(),name);
+    	NameId.put(name,file.getId());
+    	
     }
 
     /**
@@ -54,7 +82,11 @@ public class Catalog {
      */
     public int getTableId(String name) {
         // some code goes here
-        return 0;
+    	if(!NameId.containsKey(name))
+    	{
+    		throw new NoSuchElementException();
+    	}
+    	return NameId.get(name);
     }
 
     /**
@@ -64,7 +96,10 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+    	if(!IdFile.containsKey(tableid)) {
+    		throw new NoSuchElementException();
+    	}
+    	return IdFile.get(tableid).getTupleDesc();
     }
 
     /**
@@ -75,12 +110,18 @@ public class Catalog {
      */
     public DbFile getDbFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+    	if(!IdFile.containsKey(tableid)) {
+    		throw new NoSuchElementException(); 
+    	}
+    	return IdFile.get(tableid);
     }
 
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+    	IdName.clear();
+    	IdFile.clear();
+    	NameId.clear();
     }
     
     /**

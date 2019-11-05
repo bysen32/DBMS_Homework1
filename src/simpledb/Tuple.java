@@ -6,7 +6,9 @@ package simpledb;
  * Field objects with the data for each field.
  */
 public class Tuple {
-
+	private TupleDesc TD;
+	private Field[] fields;
+	private RecordId rid;
     /**
      * Create a new tuple with the specified schema (type).
      *
@@ -15,6 +17,9 @@ public class Tuple {
      */
     public Tuple(TupleDesc td) {
         // some code goes here
+    	TD = td;
+    	fields = new Field[td.numFields()];
+    	
     }
 
     /**
@@ -22,7 +27,7 @@ public class Tuple {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return TD;
     }
 
     /**
@@ -31,7 +36,7 @@ public class Tuple {
      */
     public RecordId getRecordId() {
         // some code goes here
-        return null;
+        return rid;
     }
 
     /**
@@ -40,6 +45,7 @@ public class Tuple {
      */
     public void setRecordId(RecordId rid) {
         // some code goes here
+    	this.rid = rid;
     }
 
     /**
@@ -50,6 +56,14 @@ public class Tuple {
      */
     public void setField(int i, Field f) {
         // some code goes here
+    	if(invalidindex(i)) {
+    		throw new IllegalArgumentException("index must be valid");
+    	}
+    	fields[i] = f;
+    }
+    
+    public boolean invalidindex(int i) {
+    	return((i < 0 || i >= this.fields.length)? true:false);
     }
 
     /**
@@ -59,7 +73,11 @@ public class Tuple {
      */
     public Field getField(int i) {
         // some code goes here
-        return null;
+    	if(invalidindex(i)) {
+    		throw new IllegalArgumentException("index must be valid");
+    	}
+    	
+        return fields[i];
     }
 
     /**
@@ -73,6 +91,12 @@ public class Tuple {
      */
     public String toString() {
         // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+    	StringBuffer S = new StringBuffer();
+    	for(Field fd:fields) {
+    		S.append(fd.toString());
+    		S.append("\t");
+    	}
+    	S.replace(S.length()-1,S.length()-1,"\n");
+    	return S.toString();
     }
 }

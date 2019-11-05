@@ -26,6 +26,7 @@ public interface DbFile {
      *
      * @throws IOException if the write fails
      *
+     
      */
     public void writePage(Page p) throws IOException;
 

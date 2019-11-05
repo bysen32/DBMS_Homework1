@@ -7,7 +7,11 @@ import java.util.*;
  * disk).
  */
 public class SeqScan implements DbIterator {
-
+	private TransactionId trsid;
+	private DbFile dbfile;
+	private int tableid;
+	private String tableAlias;
+	private DbFileIterator FileIt;
     /**
      * Creates a sequential scan over the specified table as a part of the
      * specified transaction.
@@ -22,11 +26,19 @@ public class SeqScan implements DbIterator {
      */
     public SeqScan(TransactionId tid, int tableid, String tableAlias) {
         // some code goes here
+    	trsid = tid;
+    	this.tableid = tableid;
+    	this.tableAlias = tableAlias;
+    	dbfile = Database.getCatalog().getDbFile(tableid);
+    	FileIt = dbfile.iterator(trsid);
+    	
     }
 
     public void open()
         throws DbException, TransactionAbortedException {
         // some code goes here
+    	FileIt.open();
+    	
     }
 
     /**
@@ -37,26 +49,35 @@ public class SeqScan implements DbIterator {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+    	TupleDesc td = Database.getCatalog().getTupleDesc(dbfile.getId());
+    	Type[] types = new Type[td.numFields()];
+    	String[] names = new String[td.numFields()];
+    	for(int i = 0; i < td.numFields(); i++) {
+    		types[i] = td.getType(i);
+    		names[i] = tableAlias + '.' + td.getFieldName(i);
+    	}
+        return new TupleDesc(types,names);
     }
 
     public boolean hasNext() throws TransactionAbortedException, DbException {
         // some code goes here
-        return false;
+        return FileIt.hasNext();
     }
 
     public Tuple next()
         throws NoSuchElementException, TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+        return FileIt.next();
     }
 
     public void close() {
         // some code goes here
+    	FileIt.close();
     }
 
     public void rewind()
         throws DbException, NoSuchElementException, TransactionAbortedException {
         // some code goes here
+    	FileIt.rewind();
     }
 }
